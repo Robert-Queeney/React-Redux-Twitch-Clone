@@ -1,6 +1,7 @@
 
 
 import streams from '../apis/streams';
+import history from '../history';
 import  { 
     SIGN_IN,
     SIGN_OUT,
@@ -25,10 +26,14 @@ export const signOut = () => {
 }
 
 // async post request action creators so we r using thunk and dispatch func
-export const createStream = formValues => async dispatch => {
-    const response = await streams.post('/streams', formValues);
+export const createStream = formValues => async (dispatch, getState) => {
+    // need to get userId from google auth (different state value)
+    // can use redux dev tolls to look at where this data is and path to get it
+    const { userId } = getState().auth;
+    const response = await streams.post('/streams', { ...formValues, userId });
 
     dispatch({ type: CREATE_STREAM, payload: response.data });
+    history.push('/');
 };
 
 export const fetchStreams = () => async dispatch => {
@@ -47,7 +52,8 @@ export const fetchStream = (id) => async dispatch => {
 export const editStream = (id, formValues) => async dispatch => {
     const response = await streams.put(`/streams/${id}`, formValues)
 
-    dispatch({ type: EDIT_STREAM, payload: response.data })
+    dispatch({ type: EDIT_STREAM, payload: response.data });
+    history.push('/');
 };
 
 // no response needed since it is deleting a record only
